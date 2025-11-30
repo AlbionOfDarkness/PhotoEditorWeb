@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, flash
 # Flask - библиотека для запуска нашего приложения Flask - app
 # render_template - нужен для то чтобы ваша страница html отобразилась корреткно
 # redirect - нам понадобится для обработки запросы формы где мы перенаприм пользователя на страницу админ панели
@@ -6,6 +6,7 @@ from flask import Flask, render_template, redirect, url_for, request
 # request - обработчик запросов GET/POST и дргуих 
 
 app = Flask(__name__)
+app.secret_key = 'your-secret-key-here'
 @app.route('/')
 def index():
     return render_template("index.html")
@@ -30,6 +31,10 @@ def choose_option():
 @app.route('/hello/<name>')
 def hello(name):
   return render_template('test_hello.html', name=name)
+
+@app.route('/error', methods=['POST'])
+def error():
+    return render_template('index.html', error="Неправильный форма akdjfbjnadsfnalkdsfnkja fffffffffff fffffffff ffndslkfnak sdnfadnsjflknajт")
 
 if __name__ == '__main__':
     app.run(debug=True)
