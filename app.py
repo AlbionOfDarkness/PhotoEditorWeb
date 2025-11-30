@@ -7,7 +7,7 @@ import cv2
 # url_for - вспомогательна библиотека для того чтобы сделать правильный переход по ссылке в нашем случеш мы будем ссылаться на adm_panel
 # request - обработчик запросов GET/POST и дргуих 
 
-def get_actual_index():
+def get_actual_index(error = ""):
   index = "index.html"
   context = {}
   if top_option != "":
@@ -15,6 +15,8 @@ def get_actual_index():
   if path_to_current_image != "":
     context["content"] = "contents/image_display.html"
     context["image_path"] = path_to_current_image
+  if error != "":
+    context["error"] = error
   return render_template(index, **context)
 
 app = Flask(__name__)
@@ -34,7 +36,7 @@ def choose_option():
     top_option = request.args.get('file')  # вернет None, если параметр отсутствует
 
     if top_option == "":
-        return "Файл не указан!", 500  # TODO поменять на модалку
+        return get_actual_index(error="Файл не указан!")
 
     return get_actual_index()
 
@@ -49,7 +51,7 @@ def load():
       path_to_current_image = f"{UPLOAD_PATH}{file.filename}"
       file.save(path_to_current_image)
       return get_actual_index()
-    return "Файл не получен" # TODO поменять на модалку
+    return get_actual_index(error="Не удалось загрузить файл!")
 
 @app.route('/download', methods=['GET'])
 def download_file():
@@ -73,14 +75,16 @@ def download_file():
         uload_path,
         as_attachment=True
     )
-  return "Изображение не найдено", 404 # TODO поменять на модалку
+  return get_actual_index(error="Нет рабочего изображения, загрузите изображение")
+
   
-
-    
-
 @app.route('/hello/<name>')
 def hello(name):
   return render_template('test_hello.html', name=name)
+
+@app.route('/test')
+def test():
+  return render_template('index.html', error="asdasd")
 
 if __name__ == '__main__':
     app.run(debug=True)
