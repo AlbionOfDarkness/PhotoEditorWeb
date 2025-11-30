@@ -20,6 +20,10 @@ def get_actual_index():
 
 app = Flask(__name__)
 
+@app.route('/')
+def index():
+    return render_template("index.html")
+
 
 
 path_to_current_image = "" # для выбранной пользователем картикни
