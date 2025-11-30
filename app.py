@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, request, send_file
 from os import makedirs
 import cv2
+import numpy as np
 # Flask - библиотека для запуска нашего приложения Flask - app
 # render_template - нужен для то чтобы ваша страница html отобразилась корреткно
 # redirect - нам понадобится для обработки запросы формы где мы перенаприм пользователя на страницу админ панели
@@ -77,14 +78,25 @@ def download_file():
     )
   return get_actual_index(error="Нет рабочего изображения, загрузите изображение")
 
+
+@app.route('/brightcontr', methods=['POST'])
+def brightcontr():
+    global path_to_current_image
+    img = cv2.imread(path_to_current_image)
+    alpha = float(request.form.get('contrast')) 
+    beta = float(request.form.get('brightness')) # контраст
+    img_contrast = cv2.convertScaleAbs(img, alpha=alpha, beta=beta)
+
+    path_to_current_image = UPLOAD_PATH + "/yourPic.png"
+    cv2.imwrite(path_to_current_image, img_contrast)
+
+    return get_actual_index()
+
   
 @app.route('/hello/<name>')
 def hello(name):
   return render_template('test_hello.html', name=name)
 
-@app.route('/test')
-def test():
-  return render_template('index.html', error="asdasd")
 
 if __name__ == '__main__':
     app.run(debug=True)

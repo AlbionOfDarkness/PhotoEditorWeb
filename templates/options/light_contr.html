@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Яркость и Контраст</title>
+</head>
+<body>
+
+<form id="form-settings" action="brightcontr" method="post">
+
+  <label>
+    Сдвиг якрости (<span class="value-display" id="brightness-display">0</span>):
+    <input type="range" id="brightness-range" name="brightness" min="-255" max="255" step="1" value="0" required>
+  </label>
+  <input type="hidden" name="brightness_value" id="brightness_hidden" value="0">
+  <label>
+
+    Коэффицент умножения яркости пикселя (<span class="value-display" id="contrast-display">0</span>):
+    <input type="range" id="contrast-range" name="contrast" min="0" max="5.0" step="0.1" value="1.0" required>
+  </label>
+  <input type="hidden" name="contrast_value" id="contrast_hidden" value="1.0">
+
+  <button type="submit">Применить</button>
+
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const brightnessRange = document.getElementById("brightness-range");
+  const brightnessHidden = document.getElementById("brightness-hidden");
+  const brightnessDisplay = document.getElementById("brightness-display");
+
+  const contrastRange = document.getElementById("contrast-range");
+  const contrastHidden = document.getElementById("contrast-hidden");
+  const contrastDisplay = document.getElementById("contrast-display");
+
+  function updateValue(range, hidden, display) {
+    display.textContent = range.value;
+    hidden.value = range.value;
+  }
+
+  // Обновляем значения при движении ползунка, но форма пока не отправляется
+  brightnessRange.addEventListener("input", () => updateValue(brightnessRange, brightnessHidden, brightnessDisplay));
+  contrastRange.addEventListener("input", () => updateValue(contrastRange, contrastHidden, contrastDisplay));
+});
+</script>
+
+</body>
+</html>
