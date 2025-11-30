@@ -7,7 +7,6 @@ import cv2
 # url_for - вспомогательна библиотека для того чтобы сделать правильный переход по ссылке в нашем случеш мы будем ссылаться на adm_panel
 # request - обработчик запросов GET/POST и дргуих 
 
-
 def get_actual_index():
   index = "index.html"
   context = {}
@@ -19,12 +18,6 @@ def get_actual_index():
   return render_template(index, **context)
 
 app = Flask(__name__)
-
-@app.route('/')
-def index():
-    return render_template("index.html")
-
-
 
 path_to_current_image = "" # для выбранной пользователем картикни
 top_option = "" # для выбранной опции меню
