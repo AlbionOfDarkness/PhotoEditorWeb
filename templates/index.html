@@ -1,0 +1,78 @@
+<script>
+    // Меняем URL в адресной строке без перезагрузки страницы
+    const cleanUrl = window.location.origin;
+    
+    window.history.pushState({}, '', cleanUrl);
+</script>
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Страница с меню</title>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+
+    <!-- Правая часть (меню + шаблоны + контент) -->
+    <div class="main">
+        <div class="navbar">
+            <div class="dropdown">
+                <button>Файл</button>
+                <div class="dropdown-content">
+                    <a href="save">Сохранить</a>
+                    <a href="load">Загрузить</a>
+                </div>
+            </div>
+            <div class="dropdown">
+                <button>Меню 2</button>
+                <div class="dropdown-content">
+                    <a href="#">Пункт A</a>
+                    <a href="#">Пункт B</a>
+                </div>
+            </div>
+            <div class="dropdown">
+                <button>Меню 3</button>
+                <div class="dropdown-content">
+                    <a href="#">Опция X</a>
+                    <a href="#">Опция Y</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Панель шаблонов функций -->
+         {% if option_top_div %} 
+        <div class="option-panel">
+            {% include option_top_div %} 
+        </div>
+        {% endif %}
+
+
+        <div class="workarea">
+            <div class="sidebar">
+                <div class="tool-grid">
+                    <a href="choose_option?file=options/cut.html" class="tool-item" style="background-image: url('path1.png');">Cut</a>
+                    <a href="choose_option?file=options/gamma.html" class="tool-item" style="background-image: url('path1.png');">Gam</a>
+                </div>
+            </div>
+            <div class="content">
+                {% if content %} 
+                {% include content %} 
+                {% else %}
+                {% include 'contents/defult.html' %}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="footer">
+        <p>Подвал</p>
+        </div>
+    </div>
+
+
+
+
+</body>
+</html>
+
