@@ -1,10 +1,9 @@
 <script>
     // Меняем URL в адресной строке без перезагрузки страницы
     const cleanUrl = window.location.origin;
-    
+
     window.history.pushState({}, '', cleanUrl);
 </script>
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -15,6 +14,28 @@
 </head>
 <body>
 
+
+     {% if error %}
+    <!-- Модальное окно для ошибок -->
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="errorModalLabel">Ошибка</h5>
+                </div>
+                <div class="modal-body">
+                    <p id="errorMessage" style="width: 250px;">{{ error if error else '' }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+     {% endif %}
+
+
+    <!-- Правая часть (меню + шаблоны + контент) -->
     <div class="main">
         <div class="navbar">
             <div class="dropdown">
@@ -55,7 +76,15 @@
                     <a href="choose_option?file=options/gamma.html" class="tool-item" style="background-image: url('path1.png');">Gam</a>
                     <a href="choose_option?file=options/load.html" class="tool-item" style="background-image: url('path1.png');">Load</a>
                     <a href="choose_option?file=options/download.html" class="tool-item" style="background-image: url('path1.png');">Dwl</a>
+                    <a href="choose_option?file=options/mirror.html" class="tool-item" style="background-image: url('path1.png');">Mir</a>
                 </div>
+
+        <div class="Error_debug">
+            <form method="post" action="/error">
+                <button type="submit" class="btn btn-primary">Вызывать ошибку</button>
+            </form>
+        </div>
+
             </div>
             <div class="content">
                 {% if content %} 
@@ -70,6 +99,33 @@
         <p>Подвал</p>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="static/scripts/error_scripts.js"></script>
+    <script src="static/scripts/link.clear.js"></script>
+
+     <script>
+        // Автоматически показываем модальное окно при загрузке, если есть ошибка
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if error %}
+            showError("{{ error }}");
+            {% endif %}
+
+            // Обработка flash сообщений
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if category == 'error' %}
+                            showError("{{ message }}");
+                        {% elif category == 'success' %}
+                            showSuccess("{{ message }}");
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        });
+     </script>
 
 </body>
 </html>

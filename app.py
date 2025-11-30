@@ -85,5 +85,9 @@ def download_file():
 def hello(name):
   return render_template('test_hello.html', name=name)
 
+@app.route('/error', methods=['POST'])
+def error():
+    return render_template('index.html', error="Неправильный форма akdjfbjnadsfnalkdsfnkja fffffffffff fffffffff ffndslkfnak sdnfadnsjflknajт")
+
 if __name__ == '__main__':
     app.run(debug=True)
