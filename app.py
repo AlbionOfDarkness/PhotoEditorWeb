@@ -78,6 +78,17 @@ def download_file():
     )
   return get_actual_index(error="Нет рабочего изображения, загрузите изображение")
 
+@app.route('/brightcontr', methods=['POST'])
+def brightcontr():
+    global path_to_current_image
+    img = cv2.imread(path_to_current_image)
+    alpha = float(request.form.get('contrast'))
+    beta = float(request.form.get('brightness'))  # контраст
+    img_contrast = cv2.convertScaleAbs(img, alpha=alpha, beta=beta)
+
+    path_to_current_image = UPLOAD_PATH + "/yourPic.png"
+    cv2.imwrite(path_to_current_image, img_contrast)
+    return get_actual_index()
 
 @app.route('/mirror', methods=['POST'])
 def mirror():
@@ -87,6 +98,8 @@ def mirror():
 
     if request.method == 'POST':
         axis = request.form.get('axis')
+
+
 
         if axis not in ['x', 'y', 'both']:
             return get_actual_index(error="Неверно указана ось отражения!")
@@ -411,14 +424,11 @@ def crop():
 
     return get_actual_index(error="Ошибка при обработке изображения!")
 
-  
+
 @app.route('/hello/<name>')
 def hello(name):
   return render_template('test_hello.html', name=name)
 
-@app.route('/test')
-def test():
-  return render_template('index.html', error="asdasd")
 
 if __name__ == '__main__':
     app.run(debug=True)
