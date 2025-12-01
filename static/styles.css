@@ -18,18 +18,23 @@ body {
 }
 
 .tool-grid {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
 }
 
 .tool-item {
-    width: 40px;
-    height: 40px;
+
     background-size: cover;
     background-position: center;
     border: 1px solid #555;
     cursor: pointer;
+}
+
+.tool-grid a{
+    text-decoration: none;
+    color: white;
 }
 
 /* Основной контейнер справа */
