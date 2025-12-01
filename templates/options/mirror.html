@@ -1,5 +1,13 @@
-<div class="option-template">Пример отзеркаливания</div>
-<form method="post" action="mirror">
-    <input type="number">
-    <button>Отправить</button>
+<form method="post" action="/mirror">
+    <label>Ось отражения:</label>
+    <input type="radio" name="axis" value="x" id="axis_x" required>
+    <label for="axis_x">По горизонтали (X)</label>
+
+    <input type="radio" name="axis" value="y" id="axis_y">
+    <label for="axis_y">По вертикали (Y)</label>
+
+    <input type="radio" name="axis" value="both" id="axis_both">
+    <label for="axis_both">По обеим осям</label>
+
+    <button type="submit">Отразить</button>
 </form>

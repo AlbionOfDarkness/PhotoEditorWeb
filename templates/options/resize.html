@@ -1,0 +1,103 @@
+<form method="post" action="/resize">
+    <div class="form-group">
+        <label>Тип изменения:</label>
+        <div>
+            <input type="radio" name="resize_type" value="scale" id="scale" checked>
+            <label for="scale">Масштаб</label>
+        </div>
+        <div>
+            <input type="radio" name="resize_type" value="width" id="width">
+            <label for="width">Ширина</label>
+        </div>
+        <div>
+            <input type="radio" name="resize_type" value="height" id="height">
+            <label for="height">Высота</label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="value">Значение: <span id="value_value">1.0</span></label>
+        <input type="range" name="value" id="value" min="0.1" max="3.0" step="0.1" value="1.0">
+    </div>
+
+    <div class="form-group">
+        <label>Метод интерполяции:</label>
+        <div>
+            <input type="radio" name="method" value="auto" id="auto" checked>
+            <label for="auto">Автоматически</label>
+        </div>
+        <div>
+            <input type="radio" name="method" value="nearest" id="nearest">
+            <label for="nearest">Ближайший сосед</label>
+        </div>
+        <div>
+            <input type="radio" name="method" value="linear" id="linear">
+            <label for="linear">Билинейная</label>
+        </div>
+        <div>
+            <input type="radio" name="method" value="cubic" id="cubic">
+            <label for="cubic">Бикубическая</label>
+        </div>
+    </div>
+
+    <button type="submit">Изменить размер</button>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const slider = document.getElementById('value');
+    const value = document.getElementById('value_value');
+    const resizeType = document.querySelectorAll('input[name="resize_type"]');
+
+    slider.addEventListener('input', function() {
+        value.textContent = parseFloat(this.value).toFixed(1);
+    });
+
+    resizeType.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'scale') {
+                slider.min = 0.1;
+                slider.max = 3.0;
+                slider.step = 0.1;
+                slider.value = 1.0;
+                value.textContent = '1.0';
+            } else {
+                slider.min = 50;
+                slider.max = 2000;
+                slider.step = 10;
+                slider.value = 800;
+                value.textContent = '800';
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+input[type="range"] {
+    width: 100%;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+</style>

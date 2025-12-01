@@ -1,0 +1,158 @@
+<form method="post" action="/crop" id="cropForm">
+    <div class="form-group">
+        <label>Тип вырезки:</label>
+        <div>
+            <input type="radio" name="crop_type" value="rectangular" id="rectangular" checked>
+            <label for="rectangular">Прямоугольная</label>
+        </div>
+        <div>
+            <input type="radio" name="crop_type" value="freeform" id="freeform">
+            <label for="freeform">Произвольная форма</label>
+        </div>
+    </div>
+
+    <div id="rectangular_section">
+        <div class="form-group">
+            <div class="coord-inputs">
+                <div>
+                    <label for="x">Координата X:</label>
+                    <input type="number" name="x" id="x" min="0" value="0" required>
+                </div>
+                <div>
+                    <label for="y">Координата Y:</label>
+                    <input type="number" name="y" id="y" min="0" value="0" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="coord-inputs">
+                <div>
+                    <label for="width">Ширина:</label>
+                    <input type="number" name="width" id="width" min="1" value="100" required>
+                </div>
+                <div>
+                    <label for="height">Высота:</label>
+                    <input type="number" name="height" id="height" min="1" value="100" required>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="freeform_section" style="display: none;">
+        <div class="form-group">
+            <label for="points_data">Координаты точек (x1,y1;x2,y2;...):</label>
+            <textarea name="points" id="points_data" rows="4" placeholder="Например: 100,50;200,50;200,150;100,150"></textarea>
+            <small>Укажите координаты точек через точку с запятой. Каждая точка в формате X,Y</small>
+        </div>
+        <div class="form-group">
+            <button type="button" id="addPoint">Добавить точку</button>
+            <button type="button" id="clearPoints">Очистить точки</button>
+        </div>
+    </div>
+
+    <input type="hidden" name="points" id="points_input">
+
+    <button type="submit">Вырезать</button>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rectangularRadio = document.getElementById('rectangular');
+    const freeformRadio = document.getElementById('freeform');
+    const rectSection = document.getElementById('rectangular_section');
+    const freeformSection = document.getElementById('freeform_section');
+    const pointsData = document.getElementById('points_data');
+    const pointsInput = document.getElementById('points_input');
+    const addPointBtn = document.getElementById('addPoint');
+    const clearPointsBtn = document.getElementById('clearPoints');
+
+    let points = [];
+
+    function toggleSections() {
+        if (rectangularRadio.checked) {
+            rectSection.style.display = 'block';
+            freeformSection.style.display = 'none';
+        } else {
+            rectSection.style.display = 'none';
+            freeformSection.style.display = 'block';
+        }
+    }
+
+    function updatePointsDisplay() {
+        pointsData.value = points.map(p => `${p.x},${p.y}`).join(';');
+        pointsInput.value = pointsData.value;
+    }
+
+    rectangularRadio.addEventListener('change', toggleSections);
+    freeformRadio.addEventListener('change', toggleSections);
+
+    addPointBtn.addEventListener('click', function() {
+        const x = Math.floor(Math.random() * 300) + 50;
+        const y = Math.floor(Math.random() * 200) + 50;
+        points.push({x, y});
+        updatePointsDisplay();
+    });
+
+    clearPointsBtn.addEventListener('click', function() {
+        points = [];
+        updatePointsDisplay();
+    });
+
+    toggleSections();
+    updatePointsDisplay();
+});
+</script>
+
+<style>
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.coord-inputs {
+    display: flex;
+    gap: 15px;
+}
+
+.coord-inputs > div {
+    flex: 1;
+}
+
+.coord-inputs input, textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+textarea {
+    resize: vertical;
+}
+
+button {
+    padding: 10px 20px;
+    margin-right: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+small {
+    color: #666;
+    font-size: 0.9em;
+    display: block;
+    margin-top: 5px;
+}
+</style>

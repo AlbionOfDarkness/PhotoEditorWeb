@@ -1,0 +1,73 @@
+<form method="post" action="/color_balance">
+    <div class="form-group">
+        <label for="red">Красный канал: <span id="red_value">0</span></label>
+        <input type="range" name="red" id="red" min="-1" max="1" step="0.01" value="0">
+    </div>
+
+    <div class="form-group">
+        <label for="green">Зеленый канал: <span id="green_value">0</span></label>
+        <input type="range" name="green" id="green" min="-1" max="1" step="0.01" value="0">
+    </div>
+
+    <div class="form-group">
+        <label for="blue">Синий канал: <span id="blue_value">0</span></label>
+        <input type="range" name="blue" id="blue" min="-1" max="1" step="0.01" value="0">
+    </div>
+
+    <button type="submit">Применить</button>
+    <button type="button" id="reset">Сбросить</button>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sliders = ['red', 'green', 'blue'];
+
+    sliders.forEach(color => {
+        const slider = document.getElementById(color);
+        const value = document.getElementById(color + '_value');
+
+        slider.addEventListener('input', function() {
+            value.textContent = parseFloat(this.value).toFixed(2);
+        });
+    });
+
+    document.getElementById('reset').addEventListener('click', function() {
+        sliders.forEach(color => {
+            const slider = document.getElementById(color);
+            const value = document.getElementById(color + '_value');
+            slider.value = 0;
+            value.textContent = '0';
+        });
+    });
+});
+</script>
+
+<style>
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+input[type="range"] {
+    width: 100%;
+}
+
+button {
+    padding: 10px 20px;
+    margin-right: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+</style>

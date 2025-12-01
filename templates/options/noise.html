@@ -1,0 +1,60 @@
+<form method="post" action="/add_noise">
+    <div class="form-group">
+        <label>Тип шума:</label>
+        <div>
+            <input type="radio" name="noise_type" value="gaussian" id="gaussian" checked>
+            <label for="gaussian">Гауссов шум</label>
+        </div>
+        <div>
+            <input type="radio" name="noise_type" value="salt_pepper" id="salt_pepper">
+            <label for="salt_pepper">Соль-перец</label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="amount">Интенсивность: <span id="amount_value">0.1</span></label>
+        <input type="range" name="amount" id="amount" min="0.01" max="0.5" step="0.01" value="0.1">
+    </div>
+
+    <button type="submit">Добавить шум</button>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const slider = document.getElementById('amount');
+    const value = document.getElementById('amount_value');
+
+    slider.addEventListener('input', function() {
+        value.textContent = parseFloat(this.value).toFixed(2);
+    });
+});
+</script>
+
+<style>
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+input[type="range"] {
+    width: 100%;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+</style>

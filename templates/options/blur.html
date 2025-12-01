@@ -1,0 +1,64 @@
+<form method="post" action="/blur">
+    <div class="form-group">
+        <label>Тип размытия:</label>
+        <div>
+            <input type="radio" name="blur_type" value="average" id="average" checked>
+            <label for="average">Среднее</label>
+        </div>
+        <div>
+            <input type="radio" name="blur_type" value="gaussian" id="gaussian">
+            <label for="gaussian">Гауссово</label>
+        </div>
+        <div>
+            <input type="radio" name="blur_type" value="median" id="median">
+            <label for="median">Медианное</label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="kernel_size">Размер ядра: <span id="size_value">5</span></label>
+        <input type="range" name="kernel_size" id="kernel_size" min="3" max="15" step="2" value="5">
+    </div>
+
+    <button type="submit">Применить размытие</button>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const slider = document.getElementById('kernel_size');
+    const value = document.getElementById('size_value');
+
+    slider.addEventListener('input', function() {
+        value.textContent = this.value;
+    });
+});
+</script>
+
+<style>
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+input[type="range"] {
+    width: 100%;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+</style>
