@@ -1,0 +1,1560 @@
+/* Основные стили векторного редактора */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #fff;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.vector-editor {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: #1b1b1b;
+}
+
+/* Верхняя панель инструментов */
+.vector-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: #222;
+    border-bottom: 2px solid #444;
+    min-height: 50px;
+}
+
+.toolbar-left, .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tool-btn {
+    background: #333;
+    border: 1px solid #555;
+    color: #fff;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.tool-btn:hover {
+    background: #444;
+    border-color: #666;
+}
+
+.tool-btn:active {
+    background: #555;
+}
+
+.tool-btn.active {
+    background: #007bff;
+    border-color: #0056b3;
+}
+
+.tool-select {
+    background: #333;
+    border: 1px solid #555;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 4px;
+    min-width: 80px;
+    cursor: pointer;
+}
+
+.tool-select:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.separator {
+    width: 1px;
+    height: 24px;
+    background: #555;
+    margin: 0 8px;
+}
+
+/* Основная рабочая область */
+.vector-workspace {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Левая панель инструментов */
+.vector-sidebar {
+    background: #1b1b1b;
+    border-right: 2px solid #444;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+}
+
+.tool-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-item: center;
+}
+
+.tool-group h4 {
+    margin: 0 0 10px 0;
+    color: #888;
+    font-size: 11px;
+    text-transform: uppercase;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.tool-group .tool-btn {
+    width: 125px;
+    height: 48px;
+    justify-content: center;
+    padding: 0;
+    flex-direction: column;
+    font-size: 12px;
+}
+
+.tool-group .tool-btn i {
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+/* Центральная область - холст */
+.vector-canvas-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #2d2d2d;
+    overflow: hidden;
+}
+
+.canvas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 20px;
+    background: #222;
+    border-bottom: 2px solid #444;
+    min-height: 40px;
+}
+
+.coordinates, .canvas-info {
+    font-size: 14px;
+    color: #aaa;
+    font-family: 'Courier New', monospace;
+}
+
+#vectorCanvasWrapper {
+    flex: 1;
+    position: relative;
+    overflow: auto;
+    background: #fff;
+    background-image:
+        linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+#vectorCanvas {
+    display: block;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.vector-object {
+    cursor: move;
+    transition: opacity 0.2s;
+}
+
+.vector-object:hover {
+    opacity: 0.9;
+}
+
+.vector-object.selected {
+    outline: 2px dashed #007bff;
+    outline-offset: 2px;
+    filter: drop-shadow(0 0 3px rgba(0, 123, 255, 0.5));
+}
+
+#gridOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        linear-gradient(#e0e0e0 1px, transparent 1px),
+        linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+    opacity: 0.3;
+    display: none;
+}
+
+#gridOverlay.visible {
+    display: block;
+}
+
+#selectionOverlay {
+    position: absolute;
+    border: 2px dashed #007bff;
+    background: rgba(0, 123, 255, 0.1);
+    display: none;
+    pointer-events: none;
+}
+
+/* Правая панель свойств */
+.vector-properties {
+    width: 250px;
+    background: #1b1b1b;
+    border-left: 2px solid #444;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.properties-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #444;
+}
+
+.properties-header h4 {
+    margin: 0;
+    color: #fff;
+    font-size: 16px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.close-btn:hover {
+    background: #333;
+    color: #fff;
+}
+
+.property-section {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #333;
+}
+
+.property-section h5 {
+    margin: 0 0 15px 0;
+    color: #ccc;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #aaa;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.property-input {
+    width: 100%;
+    padding: 8px 10px;
+    background: #333;
+    border: 1px solid #555;
+    color: #fff;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+.property-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.property-input[type="color"] {
+    height: 40px;
+    padding: 2px;
+}
+
+.property-input[type="range"] {
+    height: 6px;
+    padding: 0;
+    background: #444;
+    border-radius: 3px;
+    -webkit-appearance: none;
+}
+
+.property-input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: #007bff;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.property-input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: #007bff;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+textarea.property-input {
+    min-height: 60px;
+    resize: vertical;
+    font-family: Arial, sans-serif;
+}
+
+.property-btn {
+    width: 100%;
+    padding: 10px;
+    background: #007bff;
+    border: none;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s;
+    margin-top: 20px;
+}
+
+.property-btn:hover {
+    background: #0056b3;
+}
+
+.property-btn:active {
+    background: #004085;
+}
+
+/* Нижняя панель состояния */
+.vector-statusbar {
+    display: flex;
+    padding: 8px 20px;
+    background: #222;
+    border-top: 2px solid #444;
+    min-height: 40px;
+    align-items: center;
+}
+
+.status-item {
+    margin-right: 30px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-item span:first-child {
+    color: #888;
+}
+
+.status-item span:last-child {
+    color: #fff;
+    font-weight: 500;
+}
+
+/* Стили для слоев */
+#layersList {
+    margin-bottom: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.layer-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    background: #333;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 13px;
+}
+
+.layer-item:hover {
+    background: #3a3a3a;
+}
+
+.layer-item.active {
+    background: #007bff;
+}
+
+.layer-item i {
+    margin-right: 8px;
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.layer-item i:last-child {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+.layer-item span {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Скроллбар */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #222;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #666;
+}
+
+/* Подсказки */
+[title] {
+    position: relative;
+}
+
+[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-bottom: 5px;
+    border: 1px solid #555;
+}
+
+/* Иконки инструментов в активном состоянии */
+.tool-btn.active i {
+    color: #fff;
+}
+
+/* Эффекты при перетаскивании */
+.vector-object.dragging {
+    opacity: 0.7;
+    cursor: grabbing;
+}
+/* ДОБАВИТЬ В КОНЕЦ ФАЙЛА */
+
+/* Исправление скролла и нижней панели */
+.vector-canvas-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #2d2d2d;
+    overflow: hidden;
+    position: relative;
+}
+
+#vectorCanvasWrapper {
+    flex: 1;
+    position: relative;
+    overflow: auto;
+    background: #fff;
+    background-image:
+        linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    min-height: 0; /* Важно для правильного скролла */
+}
+
+.vector-statusbar {
+    display: flex;
+    padding: 8px 20px;
+    background: #222;
+    border-top: 2px solid #444;
+    min-height: 40px;
+    align-items: center;
+    flex-shrink: 0; /* Запрещаем сжатие */
+}
+
+/* Улучшение видимости выделения */
+.vector-object.selected {
+    outline: 2px dashed #007bff;
+    outline-offset: 2px;
+    filter: drop-shadow(0 0 3px rgba(0, 123, 255, 0.5));
+    cursor: move;
+}
+
+/* Подсказки для инструментов */
+.tool-btn[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-bottom: 5px;
+    border: 1px solid #555;
+}
+
+/* Стили для активного инструмента */
+.tool-group .tool-btn.active {
+    background: #007bff;
+    border-color: #0056b3;
+}
+
+.tool-group .tool-btn.active i {
+    color: #fff;
+}
+
+/* Кнопка Назад */
+.tool-btn.back-btn {
+    background: #6c757d;
+}
+
+.tool-btn.back-btn:hover {
+    background: #5a6268;
+}
+
+/* Анимация для кнопок */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.tool-btn:active {
+    animation: pulse 0.2s;
+}
+
+/* Улучшение видимости сетки */
+#gridOverlay.visible {
+    display: block;
+    z-index: 1;
+}
+
+/* Прозрачность для заблокированных слоев */
+.layer-item .fa-unlock {
+    color: #ffc107;
+}
+
+.layer-item[style*="opacity: 0.7"] span {
+    color: #888;
+    font-style: italic;
+}
+
+/* Сообщения об ошибках */
+.error-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #dc3545;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    z-index: 10000;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .vector-sidebar {
+        width: 60px;
+    }
+
+    .tool-group .tool-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 10px;
+    }
+
+    .tool-group .tool-btn i {
+        font-size: 16px;
+    }
+
+    .vector-properties {
+        width: 200px;
+        padding: 10px;
+    }
+
+    .vector-toolbar {
+        padding: 5px 10px;
+        flex-wrap: wrap;
+    }
+
+    .toolbar-left, .toolbar-right {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+}
+
+/* Предупреждение для сложных фигур */
+.polygon-hint, .star-hint, .path-hint {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 123, 255, 0.9);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* Стили для нижней панели управления */
+/* Стили для нижней панели управления */
+.bottom-control-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #2c3e50;
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    height: 60px;
+}
+
+/* Контейнеры для кнопок */
+.export-buttons-container,
+.canvas-controls-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Кнопки экспорта */
+.export-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.export-btn:hover {
+    background: #2980b9;
+}
+
+.export-btn:disabled {
+    background: #7f8c8d;
+    cursor: not-allowed;
+}
+
+/* Кнопка нового холста */
+.new-canvas-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.new-canvas-btn:hover {
+    background: #c0392b;
+}
+
+/* Модальное окно нового холста */
+.canvas-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.canvas-modal-content {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .bottom-control-panel {
+        flex-direction: column;
+        height: auto;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .export-buttons-container,
+    .canvas-controls-container {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .export-btn,
+    .new-canvas-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+}
+
+/* Стили для модальных окон (универсальные) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-dialog {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    transform: translateY(-20px);
+    transition: transform 0.3s;
+}
+
+.modal-overlay.show .modal-dialog {
+    transform: translateY(0);
+}
+
+.modal-content {
+    color: #333;
+}
+
+.modal-header {
+    background: #007bff;
+    color: white;
+    padding: 15px 20px;
+    border-bottom: 1px solid #0056b3;
+    border-radius: 8px 8px 0 0;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: white;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
+
+.modal-body {
+    padding: 20px;
+    background: #f8f9fa;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    background: #f1f3f4;
+    border-top: 1px solid #dee2e6;
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Кнопки */
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #545b62;
+}
+
+/* Формы */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #495057;
+}
+
+.form-control,
+.form-select,
+.form-range {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+}
+
+.form-control:focus,
+.form-select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Алерт */
+.alert {
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
+
+/* Для элементов внутри векторного редактора */
+.vector-editor .modal-overlay {
+    z-index: 10000;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .modal-dialog {
+        width: 95%;
+        margin: 10px;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}
+
+/* Стили для Bootstrap кнопок (если используете) */
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-secondary {
+    background: #666;
+    color: #fff;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: #fff;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+/* Стили для панели свойств */
+#propertiesPanel {
+    position: fixed;
+    right: 0;
+    top: 60px;
+    width: 300px;
+    height: calc(100vh - 60px);
+    background-color: white;
+    border-left: 1px solid #dee2e6;
+    overflow-y: auto;
+    padding: 20px;
+    z-index: 1000;
+}
+
+#propertiesPanel h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 18px;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Стили для линейки */
+.ruler {
+    position: absolute;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    overflow: hidden;
+    z-index: 900;
+}
+
+#rulerHorizontal {
+    top: 0;
+    left: 40px;
+    width: calc(100% - 40px);
+    height: 40px;
+}
+
+#rulerVertical {
+    top: 40px;
+    left: 0;
+    width: 40px;
+    height: calc(100% - 40px);
+}
+
+.ruler canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.cursor-line {
+    position: absolute;
+    background-color: #007bff;
+    opacity: 0.7;
+    z-index: 901;
+}
+
+#cursorHorizontal {
+    top: 0;
+    width: 1px;
+    height: 40px;
+    display: none;
+}
+
+#cursorVertical {
+    left: 0;
+    width: 40px;
+    height: 1px;
+    display: none;
+}
+
+/* Стили для слоев */
+#layersPanel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    background-color: white;
+    border-top: 1px solid #dee2e6;
+    z-index: 1000;
+}
+
+.layers-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.layers-content {
+    padding: 20px;
+    overflow-y: auto;
+    height: calc(100% - 60px);
+}
+
+#layersList {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.layer-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.layer-item:hover {
+    background-color: #f8f9fa;
+}
+
+.layer-item.active {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+}
+
+.layer-controls {
+    display: flex;
+    gap: 10px;
+    margin-right: 10px;
+}
+
+.layer-controls i {
+    cursor: pointer;
+    color: #666;
+}
+
+.layer-controls i:hover {
+    color: #333;
+}
+
+.layer-name {
+    flex-grow: 1;
+    font-size: 14px;
+}
+
+.layer-thumbnail {
+    width: 30px;
+    height: 30px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+/* Стили для предварительного просмотра */
+#preview-element {
+    pointer-events: none;
+}
+
+/* Стили для выделения прямоугольником */
+#selection-box {
+    fill: rgba(52, 152, 219, 0.1);
+    stroke: #3498db;
+    stroke-width: 1;
+    stroke-dasharray: 5,5;
+}
+
+/* Стили для инструментов трансформации */
+.transform-handle {
+    fill: #007bff;
+    stroke: white;
+    stroke-width: 1;
+    cursor: pointer;
+}
+
+.transform-handle:hover {
+    fill: #0056b3;
+}
+
+.rotate-handle {
+    fill: #28a745;
+}
+
+.scale-handle {
+    fill: #dc3545;
+}
+
+/* Стили для панели градиентов */
+.gradient-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.gradient-preview {
+    width: 100%;
+    height: 50px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.gradient-stops {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.gradient-stop {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 0 3px rgba(0,0,0,0.3);
+}
+
+/* Стили для панели фильтров */
+.filter-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.filter-option {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-option:hover {
+    background-color: #f8f9fa;
+    border-color: #007bff;
+}
+
+.filter-option.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #0056b3;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    #propertiesPanel {
+        width: 100%;
+        height: 300px;
+        bottom: 0;
+        top: auto;
+        border-left: none;
+        border-top: 1px solid #dee2e6;
+    }
+
+    #layersPanel {
+        height: 150px;
+    }
+
+    .modal-content {
+        width: 95%;
+        max-width: none;
+    }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Стили для кнопок */
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #545b62;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.layer-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    margin: 2px 0;
+    background: #f8f9fa;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid #dee2e6;
+}
+
+.layer-item:hover {
+    background: #e9ecef;
+}
+
+.layer-item.active {
+    background: #007bff;
+    color: white;
+    border-color: #0056b3;
+}
+
+.layer-item i {
+    margin-right: 8px;
+    font-size: 14px;
+}
+
+.layer-item .fa-lock,
+.layer-item .fa-unlock {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+.layer-item.locked {
+    opacity: 0.6;
+}
+
+.layer-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.layer-actions button {
+    flex: 1;
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+/* Стили для растровых изображений */
+.raster-image {
+    filter: none;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.raster-image.selected {
+    outline: 2px dashed #3498db;
+    outline-offset: 2px;
+}
+
+.traced-group {
+    pointer-events: bounding-box;
+}
+
+.traced-path {
+    vector-effect: non-scaling-stroke;
+}
+
+/* Модальное окно трассировки */
+.image-preview-container {
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 10px;
+    background: #222;
+    text-align: center;
+}
+
+#tracePreview {
+    margin-top: 20px;
+    min-height: 100px;
+    border: 1px dashed #666;
+    padding: 10px;
+    background: white;
+}
+
+#tracePreview svg {
+    max-width: 100%;
+    max-height: 200px;
+}
+
+.trace-controls {
+    padding: 20px;
+    background: #1a1a1a;
+    border-radius: 4px;
+}
+
+/* Кнопки управления слоями */
+.layer-controls {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.layer-btn {
+    padding: 5px 10px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.layer-btn:hover {
+    background: #2980b9;
+}
+
+/* Маркеры трансформации */
+.transform-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #007bff;
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 0 0 3px rgba(0,0,0,0.5);
+    transform: translate(-50%, -50%);
+}
+
+.transform-handle.rotate {
+    background: #28a745;
+    width: 12px;
+    height: 12px;
+    top: -40px;
+    left: 50%;
+}
+
+.transform-handle.scale-nw {
+    top: 0;
+    left: 0;
+    cursor: nw-resize;
+}
+
+.transform-handle.scale-ne {
+    top: 0;
+    right: 0;
+    cursor: ne-resize;
+}
+
+.transform-handle.scale-sw {
+    bottom: 0;
+    left: 0;
+    cursor: sw-resize;
+}
+
+.transform-handle.scale-se {
+    bottom: 0;
+    right: 0;
+    cursor: se-resize;
+}
+
+.transform-handle.scale-n {
+    top: 0;
+    left: 50%;
+    cursor: n-resize;
+}
+
+.transform-handle.scale-s {
+    bottom: 0;
+    left: 50%;
+    cursor: s-resize;
+}
+
+.transform-handle.scale-w {
+    top: 50%;
+    left: 0;
+    cursor: w-resize;
+}
+
+.transform-handle.scale-e {
+    top: 50%;
+    right: 0;
+    cursor: e-resize;
+}
+
+/* Контейнер для маркеров */
+.transform-overlay {
+    position: absolute;
+    border: 2px dashed #007bff;
+    pointer-events: none;
+    z-index: 999;
+}
+
+.transform-overlay.active {
+    border: 2px solid #007bff;
+}
+
+/* Панель трансформаций */
+.transform-controls {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.transform-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.btn-transform {
+    padding: 6px 12px;
+    background: #444;
+    border: 1px solid #555;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    flex: 1;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.btn-transform:hover {
+    background: #555;
+}
+
+.btn-transform.btn-danger {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-transform.btn-danger:hover {
+    background: #c82333;
+}
+
+/* Поле ввода с иконкой градусов */
+.property-input[type="number"] {
+    padding-right: 30px;
+}
+
+.degree-symbol {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+}

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Векторный редактор</title>
+    <link rel="stylesheet" href="static/vector_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="vector-editor">
+        <!-- Верхняя панель инструментов -->
+        <div class="vector-toolbar">
+            <div class="toolbar-left">
+                <button id="newCanvas" class="tool-btn" title="Новый холст (Ctrl+N)">
+                    <i class="fas fa-file"></i> Новый
+                </button>
+                <button id="importBtn" class="tool-btn" title="Импорт (Ctrl+O)">
+                    <i class="fas fa-folder-open"></i> Импорт
+                </button>
+                <button id="exportBtn" class="tool-btn" title="Экспорт (Ctrl+S)">
+                    <i class="fas fa-save"></i> Экспорт
+                </button>
+                <input type="file" id="importFile" accept=".svg" hidden>
+
+                <div class="separator"></div>
+
+                <button id="undoBtn" class="tool-btn" title="Отменить (Ctrl+Z)">
+                    <i class="fas fa-undo"></i>
+                </button>
+                <button id="redoBtn" class="tool-btn" title="Повторить (Ctrl+Y)">
+                    <i class="fas fa-redo"></i>
+                </button>
+
+                <div class="separator"></div>
+
+                <select id="zoomLevel" class="tool-select">
+                    <option value="0.25">25%</option>
+                    <option value="0.5">50%</option>
+                    <option value="0.75">75%</option>
+                    <option value="1" selected>100%</option>
+                    <option value="1.5">150%</option>
+                    <option value="2">200%</option>
+                </select>
+            </div>
+
+            <div class="toolbar-right">
+                <button id="gridToggle" class="tool-btn" title="Сетка (G)">
+                    <i class="fas fa-th"></i>
+                </button>
+                <button id="fullscreenBtn" class="tool-btn" title="Полный экран (F11)">
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Основная рабочая область -->
+        <div class="vector-workspace">
+            <!-- Левая панель инструментов -->
+            <div class="vector-sidebar">
+                <div class="tool-group">
+                    <h4>Инструменты</h4>
+                    <button class="tool-btn active" data-tool="select" title="Выбор (V)">
+                        <i class="fas fa-mouse-pointer"></i>
+                    </button>
+                    <button class="tool-btn" data-tool="rectangle" title="Прямоугольник (R)">
+                        <i class="fas fa-square"></i>
+                    </button>
+                    <button class="tool-btn" data-tool="circle" title="Круг (C)">
+                        <i class="fas fa-circle"></i>
+                    </button>
+                    <button class="tool-btn" data-tool="ellipse" title="Эллипс (E)">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                    <button class="tool-btn" data-tool="line" title="Линия (L)">
+                        <i class="fas fa-slash"></i>
+                    </button>
+                    <button class="tool-btn" data-tool="polygon" title="Многоугольник (P)">
+                        <i class="fas fa-draw-polygon"></i>
+                    </button>
+                    <button class="tool-btn" data-tool="text" title="Текст (T)">
+                        <i class="fas fa-font"></i>
+                    </button>
+                    <button class="tool-btn" data-tool="path" title="Кривая Безье (B)">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                    <button class="tool-btn" data-tool="star" title="Звезда (S)">
+                        <i class="fas fa-star"></i>
+                    </button>
+                </div>
+
+                <div class="tool-group">
+                    <h4>Операции</h4>
+                    <button class="tool-btn" id="groupBtn" title="Группировать (Ctrl+G)">
+                        <i class="fas fa-object-group"></i>
+                    </button>
+                    <button class="tool-btn" id="ungroupBtn" title="Разгруппировать (Ctrl+Shift+G)">
+                        <i class="fas fa-object-ungroup"></i>
+                    </button>
+                    <button class="tool-btn" id="alignLeftBtn" title="Выровнять по левому краю">
+                        <i class="fas fa-align-left"></i>
+                    </button>
+                    <button class="tool-btn" id="alignCenterBtn" title="Выровнять по центру">
+                        <i class="fas fa-align-center"></i>
+                    </button>
+                    <button class="tool-btn" id="alignRightBtn" title="Выровнять по правому краю">
+                        <i class="fas fa-align-right"></i>
+                    </button>
+                </div>
+
+            <div class="tool-group">
+                <h4>Растр</h4>
+                <button class="tool-btn" data-action="insertRaster" title="Вставить растровое изображение (I)">
+                    <i class="fas fa-image"></i>
+                </button>
+                <button class="tool-btn" data-tool="trace" title="Трассировка в вектор (Q)">
+                    <i class="fas fa-magic"></i>
+                </button>
+            </div>
+
+
+
+                <div class="tool-group">
+                    <div class="layers-panel">
+                        <h6>Слои</h6>
+                        <div class="layer-actions">
+                            <button id="addLayerBtn" class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus"></i> Добавить
+                            </button>
+                            <button id="deleteLayerBtn" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash"></i> Удалить
+                            </button>
+                            <button id="renameLayerBtn" class="btn btn-sm btn-secondary">
+                                <i class="fas fa-edit"></i> Переименовать
+                            </button>
+                            <button class="layer-btn" onclick="window.vectorEditor?.moveElementToFront()" title="На передний план (Shift+])">
+                                На передний план
+                            </button>
+                            <button class="layer-btn" onclick="window.vectorEditor?.moveElementForward()" title="На слой вперед (])">
+                                <i class="fas fa-arrow-up"></i>
+                            </button>
+                            <button class="layer-btn" onclick="window.vectorEditor?.moveElementBackward()" title="На слой назад ([)">
+                                <i class="fas fa-arrow-down"></i>
+                            </button>
+                            <button class="layer-btn" onclick="window.vectorEditor?.moveElementToBack()" title="На задний план (Shift+[)">
+                                На задний план
+                            </button>
+                        </div>
+                        <div id="layersList" class="layers-list">
+                            <!-- Слои будут добавляться динамически -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Центральная область - холст -->
+            <div class="vector-canvas-container">
+                <div class="canvas-header">
+                    <div class="coordinates">X: 0, Y: 0</div>
+                    <div class="canvas-info">800 x 600 px</div>
+                </div>
+                <div id="vectorCanvasWrapper">
+                    <svg id="vectorCanvas" width="800" height="600" viewBox="0 0 800 600">
+                        <!-- SVG содержимое будет добавляться динамически -->
+                    </svg>
+                    <div id="gridOverlay"></div>
+                    <div id="selectionOverlay"></div>
+                </div>
+            </div>
+
+            <!-- Правая панель свойств -->
+            <div class="vector-properties">
+                <div class="properties-header">
+                    <h4>Свойства</h4>
+                    <button id="closeProperties" class="close-btn">&times;</button>
+                </div>
+
+<!--                &lt;!&ndash; Панель трансформаций &ndash;&gt;-->
+<!--                <div class="property-section" id="transformProperties" style="display: none;">-->
+<!--                    <h5>Трансформации</h5>-->
+<!--    -->
+<!--                    <div class="transform-controls">-->
+<!--                        &lt;!&ndash; Положение &ndash;&gt;-->
+<!--                        <div class="form-group">-->
+<!--                            <label>Позиция X:</label>-->
+<!--                            <input type="number" id="transformX" class="property-input" step="1">-->
+<!--                        </div>-->
+<!--                        <div class="form-group">-->
+<!--                            <label>Позиция Y:</label>-->
+<!--                            <input type="number" id="transformY" class="property-input" step="1">-->
+<!--                        </div>-->
+<!--    -->
+<!--                        &lt;!&ndash; Размер &ndash;&gt;-->
+<!--                        <div class="form-group">-->
+<!--                            <label>Ширина:</label>-->
+<!--                            <input type="number" id="transformWidth" class="property-input" step="1">-->
+<!--                        </div>-->
+<!--                        <div class="form-group">-->
+<!--                            <label>Высота:</label>-->
+<!--                            <input type="number" id="transformHeight" class="property-input" step="1">-->
+<!--                            <div class="form-check">-->
+<!--                                <input type="checkbox" id="lockAspect" class="form-check-input">-->
+<!--                                <label class="form-check-label">Сохранять пропорции</label>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--    -->
+<!--                        &lt;!&ndash; Поворот &ndash;&gt;-->
+<!--                        <div class="form-group">-->
+<!--                            <label>Поворот:</label>-->
+<!--                            <input type="range" id="transformRotation" class="property-input"-->
+<!--                                   min="-180" max="180" value="0">-->
+<!--                            <span id="rotationValue">0°</span>-->
+<!--                        </div>-->
+<!--    -->
+<!--                        &lt;!&ndash; Масштаб &ndash;&gt;-->
+<!--                        <div class="form-group">-->
+<!--                            <label>Масштаб X:</label>-->
+<!--                            <input type="number" id="transformScaleX" class="property-input"-->
+<!--                                   value="1" step="0.1" min="0.1" max="10">-->
+<!--                        </div>-->
+<!--                        <div class="form-group">-->
+<!--                            <label>Масштаб Y:</label>-->
+<!--                            <input type="number" id="transformScaleY" class="property-input"-->
+<!--                                   value="1" step="0.1" min="0.1" max="10">-->
+<!--                        </div>-->
+<!--    -->
+<!--                        &lt;!&ndash; Наклон &ndash;&gt;-->
+<!--                        <div class="form-group">-->
+<!--                            <label>Наклон X:</label>-->
+<!--                            <input type="number" id="transformSkewX" class="property-input"-->
+<!--                                   value="0" step="1" min="-45" max="45">-->
+<!--                            <span>°</span>-->
+<!--                        </div>-->
+<!--                        <div class="form-group">-->
+<!--                            <label>Наклон Y:</label>-->
+<!--                            <input type="number" id="transformSkewY" class="property-input"-->
+<!--                                   value="0" step="1" min="-45" max="45">-->
+<!--                            <span>°</span>-->
+<!--                        </div>-->
+<!--    -->
+<!--                        &lt;!&ndash; Кнопки отражения &ndash;&gt;-->
+<!--                        <div class="form-group">-->
+<!--                            <label>Отражение:</label>-->
+<!--                            <div class="transform-buttons">-->
+<!--                                <button class="btn-transform" data-transform="flipH">-->
+<!--                                    <i class="fas fa-arrows-alt-h"></i> По горизонтали-->
+<!--                                </button>-->
+<!--                                <button class="btn-transform" data-transform="flipV">-->
+<!--                                    <i class="fas fa-arrows-alt-v"></i> По вертикали-->
+<!--                                </button>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--    -->
+<!--                        &lt;!&ndash; Кнопка сброса &ndash;&gt;-->
+<!--                        <div class="form-group">-->
+<!--                            <button id="resetTransform" class="btn-transform btn-danger">-->
+<!--                                <i class="fas fa-undo"></i> Сбросить трансформации-->
+<!--                            </button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                    <div class="property-section" id="styleProperties">-->
+<!--                        <h5>Стиль</h5>-->
+<!--                        <div class="form-group">-->
+<!--                            <label>Заливка:</label>-->
+<!--                            <input type="color" id="fillColor" class="property-input">-->
+<!--                            <input type="text" id="fillOpacity" placeholder="Непрозрачность" class="property-input">-->
+<!--                        </div>-->
+<!--                        <div class="form-group">-->
+<!--                            <label>Обводка:</label>-->
+<!--                            <input type="color" id="strokeColor" class="property-input">-->
+<!--                            <input type="number" id="strokeWidth" placeholder="Толщина" class="property-input">-->
+<!--                        </div>-->
+<!--                        <div class="form-group">-->
+<!--                            <label>Тип линии:</label>-->
+<!--                            <select id="strokeDasharray" class="property-input">-->
+<!--                                <option value="">Сплошная</option>-->
+<!--                                <option value="5,5">Пунктир</option>-->
+<!--                                <option value="10,5">Точка-тире</option>-->
+<!--                                <option value="20,5,5,5">Пунктирная</option>-->
+<!--                            </select>-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+                <div class="property-section" id="styleProperties">
+                    <h5>Стиль и Трансформации</h5>
+
+                    <!-- Стиль -->
+                    <div class="form-group">
+                        <label>Заливка:</label>
+                        <input type="color" id="fillColor" class="property-input">
+                        <input type="text" id="fillOpacity" placeholder="Непрозрачность" class="property-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Обводка:</label>
+                        <input type="color" id="strokeColor" class="property-input">
+                        <input type="number" id="strokeWidth" placeholder="Толщина" class="property-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Тип линии:</label>
+                        <select id="strokeDasharray" class="property-input">
+                            <option value="">Сплошная</option>
+                            <option value="5,5">Пунктир</option>
+                            <option value="10,5">Точка-тире</option>
+                            <option value="20,5,5,5">Пунктирная</option>
+                        </select>
+                    </div>
+
+                    <!-- Трансформации -->
+                    <hr>
+                    <h6>Позиция и размер</h6>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label>X:</label>
+                            <input type="number" id="transformX" class="property-input" step="1">
+                        </div>
+                        <div class="form-group half">
+                            <label>Y:</label>
+                            <input type="number" id="transformY" class="property-input" step="1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label>Ширина:</label>
+                            <input type="number" id="transformWidth" class="property-input" step="1">
+                        </div>
+                        <div class="form-group half">
+                            <label>Высота:</label>
+                            <input type="number" id="transformHeight" class="property-input" step="1">
+                        </div>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" id="lockAspect" class="form-check-input">
+                        <label class="form-check-label">Сохранять пропорции</label>
+                    </div>
+
+                    <hr>
+                    <h6>Другие трансформации</h6>
+                    <div class="form-group">
+                        <label>Поворот:</label>
+                        <input type="range" id="transformRotation" class="property-input"
+                               min="-180" max="180" value="0" step="1">
+                        <span id="rotationValue">0°</span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label>Масштаб X:</label>
+                            <input type="number" id="transformScaleX" class="property-input"
+                                   value="1" step="0.1" min="0.1" max="10">
+                        </div>
+                        <div class="form-group half">
+                            <label>Масштаб Y:</label>
+                            <input type="number" id="transformScaleY" class="property-input"
+                                   value="1" step="0.1" min="0.1" max="10">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Отражение:</label>
+                        <div class="button-group">
+                            <button class="btn-transform" data-transform="flipH">
+                                <i class="fas fa-arrows-alt-h"></i> Отразить
+                            </button>
+<!--                            <button class="btn-transform" data-transform="flipV">-->
+<!--                                <i class="fas fa-arrows-alt-v"></i> Вертикально-->
+<!--                            </button>-->
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <button id="resetTransform" class="btn-transform btn-danger">
+                            <i class="fas fa-undo"></i> Сбросить трансформации
+                        </button>
+                    </div>
+                </div>
+
+
+                    <div class="property-section" id="rasterProperties">
+                        <h5>Растровое изображение</h5>
+                        <div class="form-group">
+                            <label>Источник:</label>
+                            <input type="file" id="rasterFileInput" accept="image/png, image/jpeg, image/gif" hidden />
+                            <input type="text" id="imageHref" class="property-input" placeholder="URL изображения">
+                            <button id="browseImageBtn" class="property-btn">Выбрать файл</button>
+                            <input type="file" id="imageFileInput" accept="image/*" hidden>
+                        </div>
+                        <div class="form-group">
+                            <label>Прозрачность:</label>
+                            <input type="range" id="imageOpacity" min="0" max="1" step="0.1" value="1" class="property-input">
+                            <span id="opacityValue">100%</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Фильтр:</label>
+                            <select id="imageFilter" class="property-input">
+                                <option value="">Без фильтра</option>
+                                <option value="grayscale(100%)">Черно-белое</option>
+                                <option value="sepia(100%)">Сепия</option>
+                                <option value="blur(2px)">Размытие</option>
+                                <option value="brightness(150%)">Яркость</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="property-section" id="traceProperties">
+                        <h5>Трассировка</h5>
+                        <div class="form-group">
+                            <label>Порог:</label>
+                            <input type="range" id="traceThreshold" min="0" max="255" value="128" class="property-input">
+                            <span id="thresholdValue">128</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Режим:</label>
+                            <select id="traceMode" class="property-input">
+                                <option value="automatic">Автоматически</option>
+                                <option value="manual">Ручная настройка</option>
+                                <option value="edges">Только края</option>
+                                <option value="fill">Заливка</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Упрощение:</label>
+                            <input type="range" id="traceSimplify" min="0" max="10" step="0.1" value="1" class="property-input">
+                            <span id="simplifyValue">1.0</span>
+                        </div>
+                        <button id="startTraceBtn" class="property-btn">Начать трассировку</button>
+                        <button id="cancelTraceBtn" class="property-btn btn-secondary">Отмена</button>
+                    </div>
+
+                    <div class="property-section" id="textProperties">
+                        <h5>Текст</h5>
+                        <div class="form-group">
+                            <label>Текст:</label>
+                            <textarea id="textContent" class="property-input"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Шрифт:</label>
+                            <select id="fontFamily" class="property-input">
+                                <option value="Arial">Arial</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Georgia">Georgia</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Размер:</label>
+                            <input type="number" id="fontSize" class="property-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Выравнивание:</label>
+                            <select id="textAnchor" class="property-input">
+                                <option value="start">По левому краю</option>
+                                <option value="middle">По центру</option>
+                                <option value="end">По правому краю</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="property-section" id="animationProperties">
+                        <h5>Анимация</h5>
+                        <div class="form-group">
+                            <label>Тип:</label>
+                            <select id="animationType" class="property-input">
+                                <option value="">Нет</option>
+                                <option value="translate">Перемещение</option>
+                                <option value="rotate">Вращение</option>
+                                <option value="scale">Масштаб</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Длительность (сек):</label>
+                            <input type="number" id="animationDuration" class="property-input" value="2" step="0.1">
+                        </div>
+                        <button id="addAnimationBtn" class="property-btn">Добавить анимацию</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Нижняя панель состояния -->
+        <div class="vector-statusbar">
+            <div class="status-item">
+                <span>Инструмент:</span>
+                <span id="currentTool">Выбор</span>
+            </div>
+            <div class="status-item">
+                <span>Выделено:</span>
+                <span id="selectedCount">0 объектов</span>
+            </div>
+            <div class="status-item">
+                <span>Масштаб:</span>
+                <span id="currentZoom">100%</span>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <!-- Модальное окно создания нового холста -->
+        <div class="modal fade" id="newCanvasModal" tabindex="-1" style="display: none; height: 453px;" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Новый векторный холст</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Ширина (px):</label>
+                            <input type="number" id="canvasWidth" value="800" min="100" max="5000" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Высота (px):</label>
+                            <input type="number" id="canvasHeight" value="600" min="100" max="5000" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Цвет фона:</label>
+                            <input type="color" id="canvasBgColor" value="#ffffff" class="form-control-color">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="window.vectorEditor?.closeNewCanvasModal()">
+                            Отмена
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="window.vectorEditor?.createNewCanvas()">
+                            Создать
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- Модальное окно экспорта -->
+    <div id="exportModal" class="modal-overlay" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Экспорт векторного изображения</h5>
+                    <button type="button" class="btn-close" onclick="window.vectorEditor?.closeExportModal()">
+                        &times;
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- ДОБАВЬТЕ ЭТО СОДЕРЖИМОЕ -->
+                    <div class="form-group mb-3">
+                        <label for="exportFormat" class="form-label">Формат экспорта:</label>
+                        <select id="exportFormat" class="form-select">
+                            <option value="svg">SVG (векторный)</option>
+                            <option value="png">PNG (растровый)</option>
+                            <option value="jpeg">JPEG (растровый)</option>
+                            <option value="vdraw">.vdraw (проект)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="exportFilename" class="form-label">Имя файла:</label>
+                        <input type="text" id="exportFilename" class="form-control"
+                               value="vector_image" placeholder="Введите имя файла">
+                    </div>
+
+                    <!-- Параметры для PNG/JPEG -->
+<!--                    <div id="pngOptions" class="form-group mb-3" style="display: none;">-->
+<!--                        <label for="pngQuality" class="form-label">Качество (для JPEG):</label>-->
+<!--                        <input type="range" id="pngQuality" class="form-range" min="1" max="100" value="95">-->
+<!--                        <span id="qualityValue">95%</span>-->
+<!--                    </div>-->
+
+                    <!-- Параметры для проекта -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <small>Совет: используйте SVG для дальнейшего редактирования, PNG/JPEG для публикации в интернете.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="window.vectorEditor?.closeExportModal()">
+                        Отмена
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="window.vectorEditor?.exportFile()">
+                        Экспортировать
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно трассировки -->
+    <div id="traceModal" class="modal-overlay">
+        <div class="modal-dialog" style="max-width: 800px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Трассировка растрового изображения</h5>
+                    <button type="button" class="btn-close" onclick="window.vectorEditor?.closeTraceModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Оригинал</h6>
+                            <canvas id="traceOriginalCanvas" width="400" height="300"
+                                    style="border: 1px solid #555; max-width: 100%;"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Предпросмотр трассировки</h6>
+                            <div id="tracePreviewContainer" style="border: 1px solid #555; width: 400px; height: 300px; overflow: hidden;">
+                                <svg id="tracePreview" width="400" height="300"></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <h6>Параметры трассировки</h6>
+
+                            <div class="form-group mb-3">
+                                <label class="form-label">
+                                    Порог черно-белого:
+                                    <span id="traceThresholdValue">128</span>
+                                </label>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="form-label">Цвет трассировки:</label>
+                                <input type="color" id="traceColor" class="form-control-color" value="#000000">
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="form-label">Точность:</label>
+                                <select id="tracePrecision" class="form-select">
+                                    <option value="high">Высокая (детализация)</option>
+                                    <option value="medium" selected>Средняя (рекомендуется)</option>
+                                    <option value="low">Низкая (упрощение)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" id="traceInvert" class="form-check-input">
+                                    <label class="form-check-label">Инвертировать цвета</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="window.vectorEditor?.closeTraceModal()">
+                        Отмена
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="window.vectorEditor?.applyTrace()">
+                        Применить трассировку
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Подключаем Bootstrap (если ещё не подключен) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.js"></script>
+
+
+    <script src="static/scripts/svg_tools.js"></script>
+    <script src="static/scripts/svg_import_export.js"></script>
+    <script src="static/scripts/vector_editor.js"></script>
+
+</body>
+</html>
