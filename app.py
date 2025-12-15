@@ -1,7 +1,8 @@
-from flask import Flask, render_template, redirect, url_for, request, send_file
+from flask import Flask, render_template, jsonify, request, send_file, session
 from os import makedirs
 import cv2
 import numpy as np
+import trimesh
 # Flask - библиотека для запуска нашего приложения Flask - app
 # render_template - нужен для то чтобы ваша страница html отобразилась корреткно
 # redirect - нам понадобится для обработки запросы формы где мы перенаприм пользователя на страницу админ панели
@@ -21,6 +22,10 @@ def get_actual_index(error = ""):
   return render_template(index, **context)
 
 app = Flask(__name__)
+
+import secrets
+app.secret_key = secrets.token_hex(32)
+
 
 path_to_current_image = "" # для выбранной пользователем картикни
 top_option = "" # для выбранной опции меню
@@ -425,10 +430,457 @@ def crop():
     return get_actual_index(error="Ошибка при обработке изображения!")
 
 
+# 3d начинается здесь
+from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
+import json
+import os
+from datetime import datetime
+import trimesh
+import tempfile
+import traceback
+
+# Папка для сохранения сцен
+SCENES_FOLDER = 'saved_scenes'
+os.makedirs(SCENES_FOLDER, exist_ok=True)
+
+@app.route('/main3d')
+def main3d():
+    return render_template('main3d.html')
+
+@app.route('/static/<path:path>')
+def serve_static(path):
+    return send_from_directory('static', path)
+
+@app.route('/api/save_scene', methods=['POST'])
+def save_scene():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'Нет данных'}), 400
+        
+        # Генерируем уникальное имя файла
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"scene_{timestamp}.json"
+        filepath = os.path.join(SCENES_FOLDER, filename)
+        
+        # Сохраняем данные сцены
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        
+        return jsonify({
+            'success': True, 
+            'filename': filename,
+            'message': 'Сцена успешно сохранена'
+        })
+    
+    except Exception as e:
+        print(f"Save scene error: {str(e)}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/load_scene', methods=['POST'])
+def load_scene():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'Нет данных'}), 400
+        
+        filename = data.get('filename')
+        if not filename:
+            return jsonify({'success': False, 'error': 'Не указано имя файла'}), 400
+        
+        filepath = os.path.join(SCENES_FOLDER, filename)
+        
+        if not os.path.exists(filepath):
+            return jsonify({'success': False, 'error': 'Файл не найден'}), 404
+        
+        with open(filepath, 'r', encoding='utf-8') as f:
+            scene_data = json.load(f)
+        
+        return jsonify({'success': True, 'scene': scene_data})
+    
+    except Exception as e:
+        print(f"Load scene error: {str(e)}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/list_scenes', methods=['GET'])
+def list_scenes():
+    try:
+        scenes = []
+        for filename in os.listdir(SCENES_FOLDER):
+            if filename.endswith('.json'):
+                filepath = os.path.join(SCENES_FOLDER, filename)
+                created_time = os.path.getctime(filepath)
+                
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        scene_data = json.load(f)
+                    
+                    scenes.append({
+                        'filename': filename,
+                        'name': scene_data.get('name', filename.replace('.json', '')),
+                        'created': datetime.fromtimestamp(created_time).strftime('%Y-%m-%d %H:%M:%S'),
+                        'objects_count': len(scene_data.get('objects', [])),
+                        'scene_size': scene_data.get('sceneSize', {'width': 10, 'height': 10, 'depth': 10})
+                    })
+                except Exception as e:
+                    print(f"Error reading scene file {filename}: {e}")
+                    continue
+        
+        # Сортируем по дате создания (новые сверху)
+        scenes.sort(key=lambda x: x['created'], reverse=True)
+        
+        return jsonify({'success': True, 'scenes': scenes})
+    
+    except Exception as e:
+        print(f"List scenes error: {str(e)}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/export_scene', methods=['POST'])
+def export_scene():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'Нет данных'}), 400
+        
+        format_type = request.args.get('format', 'obj')
+        
+        if format_type == 'obj':
+            return export_to_obj(data)
+        elif format_type == 'stl':
+            return export_to_stl(data)
+        elif format_type == 'ply':
+            return export_to_ply(data)
+        else:
+            return jsonify({'success': False, 'error': 'Неподдерживаемый формат'}), 400
+    
+    except Exception as e:
+        print(f"Export scene error: {str(e)}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': f'Ошибка экспорта: {str(e)}'}), 500
+
+def create_mesh_from_object(obj):
+    """Создает mesh из данных объекта"""
+    try:
+        mesh = None
+        
+        obj_type = obj.get('type', 'cube')
+        
+        if obj_type == 'cube':
+            # Создаем куб
+            mesh = trimesh.creation.box([
+                obj.get('scale', {}).get('x', 1),
+                obj.get('scale', {}).get('y', 1), 
+                obj.get('scale', {}).get('z', 1)
+            ])
+        elif obj_type == 'sphere':
+            # Создаем сферу
+            radius = obj.get('scale', {}).get('x', 1) * 0.5
+            mesh = trimesh.creation.icosphere(
+                subdivisions=2,
+                radius=radius
+            )
+        elif obj_type == 'cylinder':
+            # Создаем цилиндр
+            radius = obj.get('scale', {}).get('x', 1) * 0.5
+            height = obj.get('scale', {}).get('y', 1)
+            mesh = trimesh.creation.cylinder(
+                radius=radius,
+                height=height,
+                sections=16
+            )
+        elif obj_type == 'cone':
+            # Создаем конус
+            radius = obj.get('scale', {}).get('x', 1) * 0.5
+            height = obj.get('scale', {}).get('y', 1)
+            mesh = trimesh.creation.cone(
+                radius=radius,
+                height=height,
+                sections=16
+            )
+        elif obj_type == 'torus':
+            # Создаем тор
+            major_radius = obj.get('scale', {}).get('x', 1) * 0.5
+            minor_radius = obj.get('scale', {}).get('x', 1) * 0.2
+            mesh = trimesh.creation.torus(
+                major_radius=major_radius,
+                minor_radius=minor_radius,
+                sections=16,
+                revolutions=16
+            )
+        elif obj_type == 'plane':
+            # Создаем плоскость
+            mesh = trimesh.creation.box([
+                obj.get('scale', {}).get('x', 5),
+                0.1,
+                obj.get('scale', {}).get('z', 5)
+            ])
+        else:
+            # По умолчанию создаем куб
+            mesh = trimesh.creation.box([1, 1, 1])
+        
+        if mesh is not None:
+            # Применяем трансформации
+            position = obj.get('position', {})
+            translation = [
+                position.get('x', 0),
+                position.get('y', 0),
+                position.get('z', 0)
+            ]
+            
+            rotation = obj.get('rotation', {})
+            # Конвертируем из градусов в радианы
+            rx = rotation.get('x', 0) * np.pi / 180
+            ry = rotation.get('y', 0) * np.pi / 180
+            rz = rotation.get('z', 0) * np.pi / 180
+            
+            # Создаем матрицу вращения
+            rot_matrix = trimesh.transformations.euler_matrix(rx, ry, rz)
+            
+            # Создаем матрицу трансляции
+            trans_matrix = trimesh.transformations.translation_matrix(translation)
+            
+            # Комбинируем трансформации
+            transform = np.dot(trans_matrix, rot_matrix)
+            mesh.apply_transform(transform)
+            
+            # Применяем цвет
+            color = obj.get('color', 0xFFFFFF)
+            if isinstance(color, int):
+                # Конвертируем из int в hex
+                hex_color = f"#{color:06x}"
+            else:
+                hex_color = str(color)
+            
+            # Конвертируем hex в RGB
+            hex_color = hex_color.lstrip('#')
+            if len(hex_color) == 6:
+                rgb = tuple(int(hex_color[i:i+2], 16) / 255.0 for i in (0, 2, 4))
+                # Применяем цвет ко всем вершинам
+                mesh.visual.vertex_colors = rgb + (obj.get('opacity', 1.0),)
+        
+        return mesh
+        
+    except Exception as e:
+        print(f"Error creating mesh: {str(e)}")
+        traceback.print_exc()
+        return None
+
+def export_to_obj(data):
+    """Экспорт сцены в формат OBJ"""
+    temp_file = None
+    try:
+        objects = data.get('objects', [])
+        if not objects:
+            # Создаем простой куб если нет объектов
+            mesh = trimesh.creation.box([1, 1, 1])
+        else:
+            combined_mesh = None
+            
+            for i, obj in enumerate(objects):
+                mesh = create_mesh_from_object(obj)
+                if mesh is not None:
+                    if combined_mesh is None:
+                        combined_mesh = mesh
+                    else:
+                        combined_mesh += mesh
+            
+            if combined_mesh is None:
+                mesh = trimesh.creation.box([1, 1, 1])
+            else:
+                mesh = combined_mesh
+        
+        # Создаем временный файл
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.obj', mode='wb')
+        temp_file.close()
+        
+        # Экспортируем
+        mesh.export(temp_file.name, file_type='obj')
+        
+        # Отправляем файл
+        response = send_file(
+            temp_file.name,
+            mimetype='text/plain',
+            as_attachment=True,
+            download_name=f"scene_{datetime.now().strftime('%Y%m%d_%H%M%S')}.obj"
+        )
+        
+        # Удаляем временный файл после отправки
+        @response.call_on_close
+        def cleanup():
+            try:
+                if temp_file and os.path.exists(temp_file.name):
+                    os.unlink(temp_file.name)
+            except:
+                pass
+        
+        return response
+    
+    except Exception as e:
+        # Очистка в случае ошибки
+        if temp_file and os.path.exists(temp_file.name):
+            try:
+                os.unlink(temp_file.name)
+            except:
+                pass
+        raise e
+
+def export_to_stl(data):
+    """Экспорт сцены в формат STL"""
+    temp_file = None
+    try:
+        objects = data.get('objects', [])
+        if not objects:
+            mesh = trimesh.creation.box([1, 1, 1])
+        else:
+            combined_mesh = None
+            
+            for obj in objects:
+                mesh = create_mesh_from_object(obj)
+                if mesh is not None:
+                    if combined_mesh is None:
+                        combined_mesh = mesh
+                    else:
+                        combined_mesh += mesh
+            
+            if combined_mesh is None:
+                mesh = trimesh.creation.box([1, 1, 1])
+            else:
+                mesh = combined_mesh
+        
+        # Создаем временный файл
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.stl', mode='wb')
+        temp_file.close()
+        
+        # Экспортируем
+        mesh.export(temp_file.name, file_type='stl')
+        
+        # Отправляем файл
+        response = send_file(
+            temp_file.name,
+            mimetype='application/sla',
+            as_attachment=True,
+            download_name=f"scene_{datetime.now().strftime('%Y%m%d_%H%M%S')}.stl"
+        )
+        
+        # Удаляем временный файл после отправки
+        @response.call_on_close
+        def cleanup():
+            try:
+                if temp_file and os.path.exists(temp_file.name):
+                    os.unlink(temp_file.name)
+            except:
+                pass
+        
+        return response
+    
+    except Exception as e:
+        if temp_file and os.path.exists(temp_file.name):
+            try:
+                os.unlink(temp_file.name)
+            except:
+                pass
+        raise e
+
+def export_to_ply(data):
+    """Экспорт сцены в формат PLY"""
+    temp_file = None
+    try:
+        objects = data.get('objects', [])
+        if not objects:
+            mesh = trimesh.creation.box([1, 1, 1])
+        else:
+            combined_mesh = None
+            
+            for obj in objects:
+                mesh = create_mesh_from_object(obj)
+                if mesh is not None:
+                    if combined_mesh is None:
+                        combined_mesh = mesh
+                    else:
+                        combined_mesh += mesh
+            
+            if combined_mesh is None:
+                mesh = trimesh.creation.box([1, 1, 1])
+            else:
+                mesh = combined_mesh
+        
+        # Создаем временный файл
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.ply', mode='wb')
+        temp_file.close()
+        
+        # Экспортируем
+        mesh.export(temp_file.name, file_type='ply')
+        
+        # Отправляем файл
+        response = send_file(
+            temp_file.name,
+            mimetype='application/octet-stream',
+            as_attachment=True,
+            download_name=f"scene_{datetime.now().strftime('%Y%m%d_%H%M%S')}.ply"
+        )
+        
+        # Удаляем временный файл после отправки
+        @response.call_on_close
+        def cleanup():
+            try:
+                if temp_file and os.path.exists(temp_file.name):
+                    os.unlink(temp_file.name)
+            except:
+                pass
+        
+        return response
+    
+    except Exception as e:
+        if temp_file and os.path.exists(temp_file.name):
+            try:
+                os.unlink(temp_file.name)
+            except:
+                pass
+        raise e
+
+@app.route('/api/test', methods=['GET'])
+def test_api():
+    """Тестовый endpoint для проверки работы API"""
+    return jsonify({
+        'success': True,
+        'message': 'API работает',
+        'timestamp': datetime.now().isoformat()
+    })
+
+if __name__ == '__main__':
+    # Создаем тестовую сцену при первом запуске
+    test_scene_path = os.path.join(SCENES_FOLDER, 'test_scene.json')
+    if not os.path.exists(test_scene_path):
+        test_scene = {
+            'name': 'Тестовая сцена',
+            'sceneSize': {'width': 10, 'height': 10, 'depth': 10},
+            'objects': [
+                {
+                    'type': 'cube',
+                    'name': 'Тестовый куб',
+                    'position': {'x': 0, 'y': 0.5, 'z': 0},
+                    'rotation': {'x': 0, 'y': 0, 'z': 0},
+                    'scale': {'x': 1, 'y': 1, 'z': 1},
+                    'color': 0x2196f3,
+                    'opacity': 1.0
+                }
+            ]
+        }
+        with open(test_scene_path, 'w', encoding='utf-8') as f:
+            json.dump(test_scene, f, ensure_ascii=False, indent=2)
+        print(f"Создана тестовая сцена: {test_scene_path}")
+    
+    print(f"Сервер запущен: http://localhost:5000")
+    print(f"Папка сцен: {SCENES_FOLDER}")
+    app.run(debug=True, port=5000)
+    
 @app.route('/hello/<name>')
 def hello(name):
   return render_template('test_hello.html', name=name)
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     app.run(debug=True)

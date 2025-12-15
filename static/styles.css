@@ -8,7 +8,6 @@ body {
 
 /* Левая панель инструментов */
 .sidebar {
-    width: 120px;
     background: #1b1b1b;
     border-right: 2px solid #444;
     padding: 10px;
@@ -231,4 +230,7 @@ body.modal-open {
     overflow: hidden;
 }
 
-
+.navbar a {
+    text-decoration: none;
+    color: inherit;
+}
