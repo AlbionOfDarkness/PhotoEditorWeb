@@ -2,9 +2,11 @@ from datetime import datetime
 
 from PIL.Image import Image
 from flask import Flask, render_template, redirect, url_for, request, send_file
+from flask import Flask, render_template, jsonify, request, send_file, session
 from os import makedirs
 import cv2
 import numpy as np
+import trimesh
 from flask import jsonify, session
 import json
 import svgwrite
@@ -33,6 +35,10 @@ def get_actual_index(error = ""):
   return render_template(index, **context)
 
 app = Flask(__name__)
+
+import secrets
+app.secret_key = secrets.token_hex(32)
+
 
 path_to_current_image = "" # для выбранной пользователем картикни
 top_option = "" # для выбранной опции меню
@@ -436,6 +442,150 @@ def crop():
 
     return get_actual_index(error="Ошибка при обработке изображения!")
 
+
+# 3d начинается здесь
+from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
+import json
+import os
+from datetime import datetime
+import trimesh
+import tempfile
+import traceback
+
+# Папка для сохранения сцен
+SCENES_FOLDER = 'saved_scenes'
+os.makedirs(SCENES_FOLDER, exist_ok=True)
+
+@app.route('/main3d')
+def main3d():
+    return render_template('main3d.html')
+
+@app.route('/static/<path:path>')
+def serve_static(path):
+    return send_from_directory('static', path)
+
+@app.route('/api/save_scene', methods=['POST'])
+def save_scene():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'Нет данных'}), 400
+
+        # Генерируем уникальное имя файла
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"scene_{timestamp}.json"
+        filepath = os.path.join(SCENES_FOLDER, filename)
+
+        # Сохраняем данные сцены
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
+        return jsonify({
+            'success': True,
+            'filename': filename,
+            'message': 'Сцена успешно сохранена'
+        })
+
+    except Exception as e:
+        print(f"Save scene error: {str(e)}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/load_scene', methods=['POST'])
+def load_scene():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'Нет данных'}), 400
+
+        filename = data.get('filename')
+        if not filename:
+            return jsonify({'success': False, 'error': 'Не указано имя файла'}), 400
+
+        filepath = os.path.join(SCENES_FOLDER, filename)
+
+        if not os.path.exists(filepath):
+            return jsonify({'success': False, 'error': 'Файл не найден'}), 404
+
+        with open(filepath, 'r', encoding='utf-8') as f:
+            scene_data = json.load(f)
+
+        return jsonify({'success': True, 'scene': scene_data})
+
+    except Exception as e:
+        print(f"Load scene error: {str(e)}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/list_scenes', methods=['GET'])
+def list_scenes():
+    try:
+        scenes = []
+        for filename in os.listdir(SCENES_FOLDER):
+            if filename.endswith('.json'):
+                filepath = os.path.join(SCENES_FOLDER, filename)
+                created_time = os.path.getctime(filepath)
+
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        scene_data = json.load(f)
+
+                    scenes.append({
+                        'filename': filename,
+                        'name': scene_data.get('name', filename.replace('.json', '')),
+                        'created': datetime.fromtimestamp(created_time).strftime('%Y-%m-%d %H:%M:%S'),
+                        'objects_count': len(scene_data.get('objects', [])),
+                        'scene_size': scene_data.get('sceneSize', {'width': 10, 'height': 10, 'depth': 10})
+                    })
+                except Exception as e:
+                    print(f"Error reading scene file {filename}: {e}")
+                    continue
+
+        # Сортируем по дате создания (новые сверху)
+        scenes.sort(key=lambda x: x['created'], reverse=True)
+
+        return jsonify({'success': True, 'scenes': scenes})
+
+    except Exception as e:
+        print(f"List scenes error: {str(e)}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/test', methods=['GET'])
+def test_api():
+    """Тестовый endpoint для проверки работы API"""
+    return jsonify({
+        'success': True,
+        'message': 'API работает',
+        'timestamp': datetime.now().isoformat()
+    })
+
+if __name__ == '__main__':
+    # Создаем тестовую сцену при первом запуске
+    test_scene_path = os.path.join(SCENES_FOLDER, 'test_scene.json')
+    if not os.path.exists(test_scene_path):
+        test_scene = {
+            'name': 'Тестовая сцена',
+            'sceneSize': {'width': 10, 'height': 10, 'depth': 10},
+            'objects': [
+                {
+                    'type': 'cube',
+                    'name': 'Тестовый куб',
+                    'position': {'x': 0, 'y': 0.5, 'z': 0},
+                    'rotation': {'x': 0, 'y': 0, 'z': 0},
+                    'scale': {'x': 1, 'y': 1, 'z': 1},
+                    'color': 0x2196f3,
+                    'opacity': 1.0
+                }
+            ]
+        }
+        with open(test_scene_path, 'w', encoding='utf-8') as f:
+            json.dump(test_scene, f, ensure_ascii=False, indent=2)
+        print(f"Создана тестовая сцена: {test_scene_path}")
+
+    print(f"Сервер запущен: http://localhost:5000")
+    print(f"Папка сцен: {SCENES_FOLDER}")
+    app.run(debug=True, port=5000)
 
 
 # Инициализация сессии для хранения истории векторных действий
@@ -914,5 +1064,5 @@ def hello(name):
   return render_template('test_hello.html', name=name)
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     app.run(debug=True)

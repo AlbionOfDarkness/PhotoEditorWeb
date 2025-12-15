@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D редактор</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles3d.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+
+    {% if error %}
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="errorModalLabel">Ошибка</h5>
+                </div>
+                <div class="modal-body">
+                    <p id="errorMessage" style="width: 250px;">{{ error if error else '' }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="main">
+        <div class="navbar">
+            <div class="dropdown">
+                <button><a href="/">Растровая графика</a></button>
+            </div>
+            <div class="dropdown">
+                <button><a href="main3d">3D редактор</a></button>
+            </div>
+            <div class="dropdown">
+                <button>Файл</button>
+                <div class="dropdown-content">
+                    <a href="#" onclick="createNewScene()">Новая сцена</a>
+                    <a href="#" onclick="saveScene()">Сохранить сцену</a>
+                    <a href="#" onclick="loadScene()">Загрузить сцену</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="workarea">
+            <!-- Левая панель инструментов -->
+            <div class="sidebar">
+                <div class="tool-grid">
+                    <div class="tool-section">
+                        <h4>Примитивы</h4>
+                        <button onclick="addCube()" class="tool-btn">Куб</button>
+                        <button onclick="addSphere()" class="tool-btn">Сфера</button>
+                        <button onclick="addCylinder()" class="tool-btn">Цилиндр</button>
+                        <button onclick="addCone()" class="tool-btn">Конус</button>
+                        <button onclick="addTorus()" class="tool-btn">Тор</button>
+                        <button onclick="addPlane()" class="tool-btn">Плоскость</button>
+                    </div>
+                    
+                    <div class="tool-section">
+                        <h4>Редактирование</h4>
+                        <button onclick="deleteSelectedObject()" class="tool-btn">🗑️ Удалить объект</button>
+                        <button onclick="duplicateObject()" class="tool-btn">⎘ Дублировать</button>
+                        <button onclick="resetTransformations()" class="tool-btn">↺ Сбросить трансформации</button>
+                    </div>
+                    
+                    <div class="tool-section">
+                        <h4>Трансформации</h4>
+                        <div class="transform-controls">
+                            <div class="transform-group">
+                                <label>Позиция:</label>
+                                <div class="input-group">
+                                    <span>X:</span>
+                                    <input type="number" id="posX" step="0.1" onchange="updateObjectPosition()">
+                                </div>
+                                <div class="input-group">
+                                    <span>Y:</span>
+                                    <input type="number" id="posY" step="0.1" onchange="updateObjectPosition()">
+                                </div>
+                                <div class="input-group">
+                                    <span>Z:</span>
+                                    <input type="number" id="posZ" step="0.1" onchange="updateObjectPosition()">
+                                </div>
+                            </div>
+                            
+                            <div class="transform-group">
+                                <label>Масштаб:</label>
+                                <div class="input-group">
+                                    <span>X:</span>
+                                    <input type="number" id="scaleX" step="0.1" value="1" onchange="updateObjectScale()">
+                                </div>
+                                <div class="input-group">
+                                    <span>Y:</span>
+                                    <input type="number" id="scaleY" step="0.1" value="1" onchange="updateObjectScale()">
+                                </div>
+                                <div class="input-group">
+                                    <span>Z:</span>
+                                    <input type="number" id="scaleZ" step="0.1" value="1" onchange="updateObjectScale()">
+                                </div>
+                                <button onclick="uniformScale()" class="small-btn">Единый масштаб</button>
+                            </div>
+                            
+                            <div class="transform-group">
+                                <label>Вращение:</label>
+                                <div class="input-group">
+                                    <span>X:</span>
+                                    <input type="number" id="rotX" step="1" onchange="updateObjectRotation()">
+                                </div>
+                                <div class="input-group">
+                                    <span>Y:</span>
+                                    <input type="number" id="rotY" step="1" onchange="updateObjectRotation()">
+                                </div>
+                                <div class="input-group">
+                                    <span>Z:</span>
+                                    <input type="number" id="rotZ" step="1" onchange="updateObjectRotation()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tool-section">
+                        <h4>Свойства</h4>
+                        <div class="properties-controls">
+                            <div class="input-group">
+                                <label>Имя объекта:</label>
+                                <input type="text" id="objectName" onchange="updateObjectName()" style="flex: 1; max-width: 150px;">
+                            </div>
+                            <div class="input-group">
+                                <label>Цвет:</label>
+                                <input type="color" id="objectColor" onchange="updateObjectColor()" style="flex: 1; max-width: 80px;">
+                            </div>
+                            <div class="input-group">
+                                <label>Непрозрачность:</label>
+                                <input type="range" id="objectOpacity" min="0" max="1" step="0.1" value="1" 
+                                       onchange="updateObjectOpacity()" style="flex: 1; max-width: 120px;">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tool-section">
+                        <h4>Объекты на сцене</h4>
+                        <div id="sceneObjectsList" class="objects-list">
+                            <!-- Список объектов будет заполняться динамически -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Основная область 3D просмотра -->
+            <div class="content">
+                <div id="scene-container" style="width:100%; height:100%; position: relative;">
+                    <div id="scene-tools" style="position: absolute; top: 10px; right: 10px; z-index: 100;">
+                        <button onclick="toggleGrid()" class="scene-btn">Сетка</button>
+                        <button onclick="toggleAxes()" class="scene-btn">Оси</button>
+                        <button onclick="resetCamera()" class="scene-btn">Сброс камеры</button>
+                        <select id="editMode" onchange="changeEditMode()" class="scene-select">
+                            <option value="select">Выбор</option>
+                            <option value="move">Перемещение</option>
+                            <option value="rotate">Вращение</option>
+                            <option value="scale">Масштаб</option>
+                        </select>
+                        <button onclick="switchToSelectMode()" class="scene-btn" title="ESC">✕ Выбор</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>3D Редактор | Выбран: <span id="selectedObjectInfo">Нет</span> | Режим: <span id="currentMode">Выбор</span></p>
+            <div class="footer-hint">ESC - переключение в режим Выбор</div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/3d_editor.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/error_scripts.js') }}"></script>
+</body>
+</html>

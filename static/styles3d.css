@@ -1,0 +1,428 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #2b2b2b;
+    color: #e0e0e0;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.main {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.navbar {
+    background-color: #1e1e1e;
+    padding: 10px 20px;
+    display: flex;
+    gap: 20px;
+    border-bottom: 1px solid #404040;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown button {
+    background-color: #3c3c3c;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.dropdown button:hover {
+    background-color: #4a4a4a;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #2d2d2d;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 4px;
+    border: 1px solid #404040;
+}
+
+.dropdown-content a {
+    color: #e0e0e0;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.3s;
+}
+
+.dropdown-content a:hover {
+    background-color: #3c3c3c;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.workarea {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 300px;
+    background-color: #252525;
+    padding: 15px;
+    overflow-y: auto;
+    border-right: 1px solid #404040;
+}
+
+.content {
+    flex: 1;
+    position: relative;
+    background-color: #1a1a1a;
+}
+
+.tool-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.tool-section {
+    background-color: #2d2d2d;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #404040;
+}
+
+.tool-section h4 {
+    margin-bottom: 15px;
+    color: #4fc3f7;
+    font-size: 16px;
+    border-bottom: 1px solid #404040;
+    padding-bottom: 8px;
+}
+
+.tool-btn {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 8px;
+    background-color: #3c3c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: left;
+}
+
+.tool-btn:hover {
+    background-color: #4a4a4a;
+    transform: translateY(-1px);
+}
+
+.tool-btn:active {
+    transform: translateY(0);
+}
+
+.transform-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.transform-group {
+    background-color: #353535;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.transform-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #bbbbbb;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 8px;
+}
+
+.input-group span {
+    width: 20px;
+    font-size: 12px;
+    color: #888;
+}
+
+.input-group input[type="number"] {
+    flex: 1;
+    background-color: #404040;
+    border: 1px solid #555;
+    color: white;
+    padding: 6px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.input-group input[type="text"],
+.input-group input[type="color"] {
+    flex: 1;
+    background-color: #404040;
+    border: 1px solid #555;
+    color: white;
+    padding: 6px;
+    border-radius: 3px;
+}
+
+.input-group input[type="range"] {
+    flex: 1;
+}
+
+.small-btn {
+    width: 100%;
+    padding: 6px;
+    background-color: #424242;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.small-btn:hover {
+    background-color: #4a4a4a;
+}
+
+.properties-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.objects-list {
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: #353535;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.object-item {
+    padding: 8px 10px;
+    margin-bottom: 4px;
+    background-color: #404040;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 13px;
+    border-left: 3px solid transparent;
+}
+
+.object-item:hover {
+    background-color: #4a4a4a;
+}
+
+.object-item.selected {
+    background-color: #2c5282;
+    border-left-color: #4fc3f7;
+}
+
+.scene-btn {
+    background-color: rgba(30, 30, 30, 0.8);
+    color: white;
+    border: 1px solid #555;
+    padding: 6px 12px;
+    margin-left: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    backdrop-filter: blur(5px);
+}
+
+.scene-btn:hover {
+    background-color: rgba(60, 60, 60, 0.9);
+}
+
+.scene-select {
+    background-color: rgba(30, 30, 30, 0.8);
+    color: white;
+    border: 1px solid #555;
+    padding: 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+.footer {
+    background-color: #1e1e1e;
+    padding: 8px 20px;
+    border-top: 1px solid #404040;
+    font-size: 12px;
+    color: #888;
+}
+
+#selectedObjectInfo {
+    color: #4fc3f7;
+    font-weight: bold;
+}
+
+#currentMode {
+    color: #81c784;
+    font-weight: bold;
+}
+
+/* Модальные окна */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+}
+
+.modal-content {
+    background-color: #2d2d2d;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #404040;
+    width: 400px;
+    border-radius: 8px;
+}
+
+.modal-header {
+    padding: 10px 0;
+    border-bottom: 1px solid #404040;
+    margin-bottom: 15px;
+}
+
+.modal-footer {
+    padding: 10px 0;
+    border-top: 1px solid #404040;
+    margin-top: 15px;
+    text-align: right;
+}
+
+.btn-close {
+    background-color: #3c3c3c;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-close:hover {
+    background-color: #4a4a4a;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 5px;
+}
+
+.input-group span {
+    width: 20px;
+    font-size: 12px;
+    color: #888;
+    flex-shrink: 0;
+}
+
+.input-group input[type="number"],
+.input-group input[type="text"],
+.input-group input[type="color"] {
+    flex: 1;
+    min-width: 0;
+    background-color: #404040;
+    border: 1px solid #555;
+    color: white;
+    padding: 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    max-width: 100px; 
+}
+
+.input-group input[type="range"] {
+    flex: 1;
+    min-width: 0;
+    max-width: 120px;
+}
+
+.input-group label {
+    font-size: 12px;
+    color: #bbbbbb;
+    margin-right: 8px;
+    white-space: nowrap;
+}
+
+
+.properties-controls .input-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.properties-controls .input-group label {
+    flex: 0 0 100px; 
+    text-align: right;
+    margin-right: 10px;
+}
+
+.properties-controls .input-group input {
+    flex: 1;
+    max-width: 150px;
+}
+
+
+#objectOpacity {
+    width: 100%;
+    max-width: 120px;
+}
+
+
+#currentMode {
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background-color: #2d2d2d;
+    border: 1px solid #404040;
+}
+
+.footer {
+    position: relative;
+}
+
+.footer::after {
+    content: "ESC - режим Выбор";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: #666;
+    opacity: 0.7;
+}
+
+.navbar a {
+    text-decoration: none;
+    color: inherit;
+}
