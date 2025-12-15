@@ -1265,6 +1265,8 @@ function loadSceneData(sceneData) {
 
 // Экспорт сцены
 async function exportScene() {
+    alert('Данная функция в разработке!');
+    return;
     if (!objects || objects.length === 0) {
         alert('Нет объектов для экспорта');
         return;
